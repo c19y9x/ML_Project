@@ -13,7 +13,7 @@ def img2vector(filename):
 
 def handwritingClassTest():
     hwLabels = []
-    trainingFileList = os.listdir(r'digits\trainingDigits')
+    trainingFileList = os.listdir(r'ch2\digits\trainingDigits')
     m = len(trainingFileList)
     trainingMat = np.zeros((m, 1024))
     for i in range(m):
@@ -21,15 +21,15 @@ def handwritingClassTest():
         fileStr = fileNameStr.split('.')[0]
         classNumStr = int(fileStr.split('_')[0])
         hwLabels.append(classNumStr)
-        trainingMat[i, :] = img2vector('digits\\trainingDigits\\%s' % fileNameStr )
-    testFileList = os.listdir('digits\\testDigits')
+        trainingMat[i, :] = img2vector('ch2\\digits\\trainingDigits\\%s' % fileNameStr )
+    testFileList = os.listdir('ch2\\digits\\testDigits')
     errorCount = 0.0
     mTest = len(testFileList)
     for i in range(mTest):
         fileNameStr = testFileList[i]
         fileStr = fileNameStr.split('.')[0]
         classNumStr = int(fileStr.split('_')[0])
-        vectorUnderTest = img2vector('digits\\testDigits\\%s' % fileNameStr)
+        vectorUnderTest = img2vector('ch2\\digits\\testDigits\\%s' % fileNameStr)
         classifierResult = kNN.classify0(vectorUnderTest, trainingMat, hwLabels, 3)
         print ("the classifier came back with: %d, the real answer is: %d" % (classifierResult, classNumStr))
         if(classifierResult != classNumStr): errorCount += 1.0

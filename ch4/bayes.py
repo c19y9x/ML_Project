@@ -1,4 +1,6 @@
 import numpy as np
+import random
+from array import array
 
 #创建实验样本
 def loadDataSet():
@@ -83,8 +85,8 @@ Returns:
 def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
 	p1 = sum(vec2Classify*p1Vec) + np.log(pClass1)			#对应元素相乘
 	p0 = sum(vec2Classify*p0Vec) + np.log(1 - pClass1)
-	print('p0:',p0)
-	print('p1:',p1)
+	# print('p0:',p0)
+	# print('p1:',p1)
 	if p1 > p0:
 		return 1
 	else: 
@@ -117,7 +119,56 @@ def testingNB():
 		print(testEntry,'属于侮辱类')										#执行分类并打印分类结果
 	else:
 		print(testEntry,'属于非侮辱类')										#执行分类并打印分类结果
- 
 
-postingList,classVec = loadDataSet()
-testingNB()
+#文档词袋模型,在词袋中，每个单词可以出现多次，而在词集中，每个词只能出现一次。
+def bagOfWords2VecMN(vocabList, inputSet):
+    returnVec = [0] * len(vocabList)  # 创建一个其中所含元素都为0的向量
+    for word in inputSet:  # 遍历每个词条
+        if word in vocabList:  # 如果词条存在于词汇表中，则置1
+            returnVec[vocabList.index(word)] += 1
+    return returnVec  # 返回文档向量
+
+def textParse(bigString):    #input is big string, #output is word list
+    import re
+    listOfTokens=re.split(r'\W+',bigString)
+    return [tok.lower() for tok in listOfTokens if len(tok) > 2] 
+
+def spamTest():
+    docList=[]; classList = []; fullText =[]
+    #读取所有50封邮件
+    for i in range(1,26):
+        path = 'ch4\email\spam\\' + str(i) + ".txt"
+        #python3得已rb形式打开文件读取
+        temp = str(open(path,'rb').read())
+        wordList = textParse(temp)
+        docList.append(wordList)
+        #fullText.extend(wordList) 不知道书中这行代码有什么意义
+        classList.append(1)
+        path = 'ch4\email\ham\\' + str(i) + ".txt"
+        temp = str(open(path,'rb').read())
+        wordList = textParse(temp)
+        docList.append(wordList)
+        #fullText.extend(wordList)
+        classList.append(0)
+
+    vocabList = createVocabList(docList)#create vocabulary
+    trainingSet = list(range(50)); testSet=[]           #create test set
+    for i in range(10):
+        randIndex = int(random.uniform(0,len(trainingSet)))
+        testSet.append(trainingSet[randIndex])
+        del(trainingSet[randIndex])  
+    trainMat=[]; trainClasses = []
+    for docIndex in trainingSet:#train the classifier (get probs) trainNB0
+        trainMat.append(bagOfWords2VecMN(vocabList, docList[docIndex]))
+        trainClasses.append(classList[docIndex])
+    p0V,p1V,pSpam = _trainNB0(trainMat,trainClasses)
+    errorCount = 0
+    for docIndex in testSet:        #classify the remaining items
+        wordVector = bagOfWords2VecMN(vocabList, docList[docIndex])
+        if classifyNB(wordVector,p0V,p1V,pSpam) != classList[docIndex]:
+            errorCount += 1
+            print("classification error",docList[docIndex])
+    print('the error rate is: ',float(errorCount)/len(testSet))
+    #return vocabList,fullText
+
+spamTest()
